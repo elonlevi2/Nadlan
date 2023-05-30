@@ -71,7 +71,7 @@ class PropertyApi(APIView):
                 ps = PropertySerializers(data=req.data)
                 if ps.is_valid():
                     ps.save()
-                    return Response("objects Created")
+                    return Response({"msg": "objects Created", "id" : ps.data['id']})
                 else:
                     return Response(f"{ps.errors}")
             except Exception as e:
@@ -306,13 +306,10 @@ class PhotoApi(APIView):
 
     @classmethod
     def post(cls, request):
-        # new_photo_name = request.data.getlist('photo[1]')
-        # new_photo_name = request.FILES.items()
-        # print(type(new_photo_name))
-        # print(new_photo_name)
+        id = int(request.GET.get("id"))
+
         for f in request.FILES.items():
-            print(f)
-            p = Property.objects.filter(id=1)
+            p = Property.objects.filter(id=id)
             Photo.objects.create(image=f[1], property=p[0])
 
         # with open(STATIC_PATH + new_photo_name, 'wb+') as f:
