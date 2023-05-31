@@ -10,7 +10,6 @@ from ..models import Property, Photo, Contact, Tip
 from .serializers import PropertySerializers, PhotoSerializers, ContactSerializers, TipSerializers, UserSerializers
 from django.conf import settings
 
-
 STATIC_PATH = str(settings.BASE_DIR) + r"//nadlan_app//static//"
 
 
@@ -71,7 +70,7 @@ class PropertyApi(APIView):
                 ps = PropertySerializers(data=req.data)
                 if ps.is_valid():
                     ps.save()
-                    return Response({"msg": "objects Created", "id" : ps.data['id']})
+                    return Response({"msg": "objects Created", "id": ps.data['id']})
                 else:
                     return Response(f"{ps.errors}")
             except Exception as e:
@@ -322,25 +321,8 @@ class PhotoApi(APIView):
 class PropertyApiPagination(APIView):
     @classmethod
     def get(cls, request, action=None):
-        if action == 'filters':
-            rooms = request.GET.get("rooms")
+        if action == 'sale':
             page_size = int(request.GET.get("page_size", 10))
-            page_num = int(request.GET.get("page_num", 0))
-
-            start = page_num * page_size
-            end = start + page_size
-
-            properties = Property.objects.filter(type='sale', rooms=rooms)[start:end]
-
-            ps = PropertySerializers(properties, many=True).data
-            res = {
-                'data': ps,
-                "next_page": 'n',
-                "has_more": end <= Property.objects.count()
-            }
-            return Response(res)
-        elif action == 'sale':
-            page_size = int(request.GET.get("page_size", 1))
             page_num = int(request.GET.get("page_num", 0))
 
             start = page_num * page_size
@@ -356,6 +338,31 @@ class PropertyApiPagination(APIView):
                 "has_more": end <= Property.objects.count()
             }
             return Response(res)
+
+        elif action == 'filters':
+            rooms = request.GET.get("rooms")
+            city = request.GET.get("city")
+
+            print(rooms, city)
+            page_size = int(request.GET.get("page_size", 10))
+            page_num = int(request.GET.get("page_num", 0))
+
+            start = page_num * page_size
+            end = start + page_size
+
+            if city != "" and rooms != "":
+                properties = Property.objects.filter(type='sale', rooms=rooms, location=city)[start:end]
+            else:
+                properties = Property.objects.filter(type='sale')[start:end]
+
+            ps = PropertySerializers(properties, many=True).data
+            res = {
+                'data': ps,
+                "next_page": 'n',
+                "has_more": end <= Property.objects.count()
+            }
+            return Response(res)
+
         elif action == 'rent':
             page_size = int(request.GET.get("page_size", 1))
             page_num = int(request.GET.get("page_num", 0))
@@ -447,3 +454,20 @@ class UserApi(APIView):
                 "has_more": end <= User.objects.count()
             }
             return Response(res)
+
+    @classmethod
+    def put(cls, request, action):
+        if action == "edit":
+            try:
+                id = request.query_params.get("id")
+                user_instance = User.objects.get(id=id)
+                us = UserSerializers(data=request.data, instance=user_instance)
+                if us.is_valid():
+                    us.save()
+                    return Response("objects updated")
+                else:
+                    return Response(f"{us.errors}")
+            except Exception as e:
+                return Response(f"{e}")
+        else:
+            return Response(f"cannot use '{action}' action with the current method. try to use with /edit ")
