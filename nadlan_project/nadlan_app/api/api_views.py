@@ -320,8 +320,9 @@ class PhotoApi(APIView):
 
 class PropertyApiPagination(APIView):
     @classmethod
-    def get(cls, request, action=None):
-        if action == 'sale':
+    def get(cls, request, action, rooms, city):
+        if action == 'sale' and rooms == "null" and city == "null":
+            print(rooms, city)
             page_size = int(request.GET.get("page_size", 10))
             page_num = int(request.GET.get("page_num", 0))
 
@@ -339,21 +340,17 @@ class PropertyApiPagination(APIView):
             }
             return Response(res)
 
-        elif action == 'filters':
-            rooms = request.GET.get("rooms")
-            city = request.GET.get("city")
+        if action == 'sale' and rooms != "null" and city != "null":
 
             print(rooms, city)
+
             page_size = int(request.GET.get("page_size", 10))
             page_num = int(request.GET.get("page_num", 0))
 
             start = page_num * page_size
             end = start + page_size
 
-            if city != "" and rooms != "":
-                properties = Property.objects.filter(type='sale', rooms=rooms, location=city)[start:end]
-            else:
-                properties = Property.objects.filter(type='sale')[start:end]
+            properties = Property.objects.filter(type='sale', rooms=rooms, location=city)[start:end]
 
             ps = PropertySerializers(properties, many=True).data
             res = {
