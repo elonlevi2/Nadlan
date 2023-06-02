@@ -320,7 +320,7 @@ class PhotoApi(APIView):
 
 class PropertyApiPagination(APIView):
     @classmethod
-    def get(cls, request, action, rooms, city):
+    def get(cls, request, action, rooms, city=None):
         if action == 'sale' and rooms == "null" and city == "null":
             print(rooms, city)
             page_size = int(request.GET.get("page_size", 10))
@@ -340,7 +340,7 @@ class PropertyApiPagination(APIView):
             }
             return Response(res)
 
-        if action == 'sale' and rooms != "null" and city != "null":
+        elif action == 'sale' and rooms != "null" and city != "null":
 
             print(rooms, city)
 
@@ -360,14 +360,108 @@ class PropertyApiPagination(APIView):
             }
             return Response(res)
 
-        elif action == 'rent':
-            page_size = int(request.GET.get("page_size", 1))
+        elif action == 'sale' and rooms != "null" and city == "null" or "":
+
+            print(rooms, city)
+
+            page_size = int(request.GET.get("page_size", 10))
+            page_num = int(request.GET.get("page_num", 0))
+
+            start = page_num * page_size
+            end = start + page_size
+
+            properties = Property.objects.filter(type='sale', rooms=rooms)[start:end]
+
+            ps = PropertySerializers(properties, many=True).data
+            res = {
+                'data': ps,
+                "next_page": 'n',
+                "has_more": end <= Property.objects.count()
+            }
+            return Response(res)
+
+        elif action == 'sale' and rooms == "null" or "" and city != "null":
+
+            print(rooms, city)
+
+            page_size = int(request.GET.get("page_size", 10))
+            page_num = int(request.GET.get("page_num", 0))
+
+            start = page_num * page_size
+            end = start + page_size
+
+            properties = Property.objects.filter(type='sale', location=city)[start:end]
+
+            ps = PropertySerializers(properties, many=True).data
+            res = {
+                'data': ps,
+                "next_page": 'n',
+                "has_more": end <= Property.objects.count()
+            }
+            return Response(res)
+
+        elif action == 'rent' and rooms == "null" and city == "null":
+            page_size = int(request.GET.get("page_size", 10))
             page_num = int(request.GET.get("page_num", 0))
 
             start = page_num * page_size
             end = start + page_size
 
             properties = Property.objects.filter(type='rent')[start:end]
+
+            ps = PropertySerializers(properties, many=True).data
+
+            res = {
+                'data': ps,
+                "next_page": 'n',
+                "has_more": end <= Property.objects.count()
+            }
+            return Response(res)
+
+        elif action == 'rent' and rooms != "null" and city != "null":
+            page_size = int(request.GET.get("page_size", 10))
+            page_num = int(request.GET.get("page_num", 0))
+
+            start = page_num * page_size
+            end = start + page_size
+
+            properties = Property.objects.filter(type='rent', rooms=rooms, city=city)[start:end]
+
+            ps = PropertySerializers(properties, many=True).data
+
+            res = {
+                'data': ps,
+                "next_page": 'n',
+                "has_more": end <= Property.objects.count()
+            }
+            return Response(res)
+
+        elif action == 'rent' and rooms != "null" and city == "null":
+            page_size = int(request.GET.get("page_size", 10))
+            page_num = int(request.GET.get("page_num", 0))
+
+            start = page_num * page_size
+            end = start + page_size
+
+            properties = Property.objects.filter(type='rent', rooms=rooms)[start:end]
+
+            ps = PropertySerializers(properties, many=True).data
+
+            res = {
+                'data': ps,
+                "next_page": 'n',
+                "has_more": end <= Property.objects.count()
+            }
+            return Response(res)
+
+        elif action == 'rent' and rooms == "null" and city != "null":
+            page_size = int(request.GET.get("page_size", 10))
+            page_num = int(request.GET.get("page_num", 0))
+
+            start = page_num * page_size
+            end = start + page_size
+
+            properties = Property.objects.filter(type='rent', location=city)[start:end]
 
             ps = PropertySerializers(properties, many=True).data
 
