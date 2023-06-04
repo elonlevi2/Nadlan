@@ -13,7 +13,7 @@ urlpatterns = [
     path("contact/<str:action>", api_views.ContactApi.as_view()),
     path("tips/<str:action>", api_views.TipApi.as_view()),
     path("photo", api_views.PhotoApi.as_view(), name='photo'),
-    path("properties_sale/<str:action>/<str:rooms>/<str:city>", api_views.PropertyApiPagination.as_view(), name='properties_sale'),
+    path("properties_sale/<str:action>/<str:rooms>/<str:city>/<str:balcony>", api_views.PropertyApiPagination.as_view(), name='properties_sale'),
     path("my-properties", api_views.PropertyOfUserApiPagination.as_view(), name='my-properties'),
     path("my-tips", api_views.TipsOfUser.as_view(), name='my-tips'),
     path("user/<str:action>", api_views.UserApi.as_view(), name='user'),
