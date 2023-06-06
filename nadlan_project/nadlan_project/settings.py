@@ -151,3 +151,12 @@ CORS_ALLOW_HEADERS = [
     'Authorization',
     'content-type'
 ]
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": f"{BASE_DIR}/cache_files",
+        "TIMEOUT": None,
+    }
+}

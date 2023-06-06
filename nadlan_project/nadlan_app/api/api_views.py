@@ -5,12 +5,16 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
+# from django.core.cache import cache
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
 
 from ..models import Property, Photo, Contact, Tip
 from .serializers import PropertySerializers, PhotoSerializers, ContactSerializers, TipSerializers, UserSerializers
 from django.conf import settings
 
-STATIC_PATH = str(settings.BASE_DIR) + r"//nadlan_app//static//"
+# STATIC_PATH = str(settings.BASE_DIR) + r"//nadlan_app//static//"
 
 
 @api_view(['POST'])
@@ -39,6 +43,7 @@ def private(req):
     return Response({'msg': f"ok. user is: {req.user.username}", 'user': {req.user.username}, 'id': {req.user.id}, "superuser": req.user.is_superuser})
 
 
+@method_decorator(cache_page(60*10), name="dispatch")
 class PropertyApi(APIView):
     # authentication_classes = [TokenAuthentication]
     # permission_classes = [IsAuthenticated]
@@ -113,6 +118,7 @@ class PropertyApi(APIView):
     #     pass
 
 
+@method_decorator(cache_page(60*10), name="dispatch")
 class ContactApi(APIView):
     # authentication_classes = [TokenAuthentication]
     # permission_classes = [IsAuthenticated]
@@ -187,6 +193,7 @@ class ContactApi(APIView):
     #     pass
 
 
+@method_decorator(cache_page(60*10), name="dispatch")
 class TipApi(APIView):
     # authentication_classes = [TokenAuthentication]
     # permission_classes = [IsAuthenticated]
@@ -195,6 +202,7 @@ class TipApi(APIView):
     def get(cls, req, action=None):
         if action == 'get':
             try:
+                print("server")
                 if "id" in req.query_params:
                     id = req.query_params.get("id")
                     tip = Tip.objects.get(id=id)
@@ -279,6 +287,7 @@ class TipApi(APIView):
     #     pass
 
 
+@method_decorator(cache_page(60*10), name="dispatch")
 class PhotoApi(APIView):
     @classmethod
     def get(cls, request):
@@ -318,18 +327,19 @@ class PhotoApi(APIView):
         return Response("Photo uploaded!")
 
 
+@method_decorator(cache_page(60*10), name="dispatch")
 class PropertyApiPagination(APIView):
     @classmethod
     def get(cls, request, action, rooms, city, balcony):
-        if action == 'sale' and rooms == "null" and city == "null" and balcony == "null":
-            print(rooms, city)
+        if rooms == "null" and city == "null" and balcony == "null":
+            print("server")
             page_size = int(request.GET.get("page_size", 10))
             page_num = int(request.GET.get("page_num", 0))
 
             start = page_num * page_size
             end = start + page_size
 
-            properties = Property.objects.filter(type='sale')[start:end]
+            properties = Property.objects.filter(type=action)[start:end]
 
             ps = PropertySerializers(properties, many=True).data
 
@@ -340,27 +350,7 @@ class PropertyApiPagination(APIView):
             }
             return Response(res)
 
-        elif action == 'sale' and rooms != "null" and city != "null" and balcony != "null":
-
-            print(rooms, city)
-
-            page_size = int(request.GET.get("page_size", 10))
-            page_num = int(request.GET.get("page_num", 0))
-
-            start = page_num * page_size
-            end = start + page_size
-
-            properties = Property.objects.filter(type='sale', rooms=rooms, location=city, balcony=balcony)[start:end]
-
-            ps = PropertySerializers(properties, many=True).data
-            res = {
-                'data': ps,
-                "next_page": 'n',
-                "has_more": end <= Property.objects.count()
-            }
-            return Response(res)
-
-        elif action == 'sale' and rooms != "null" and city == "null" and balcony == "null":
+        elif rooms != "null" and city != "null" and balcony != "null":
 
             print(rooms, city)
 
@@ -370,7 +360,7 @@ class PropertyApiPagination(APIView):
             start = page_num * page_size
             end = start + page_size
 
-            properties = Property.objects.filter(type='sale', rooms=rooms)[start:end]
+            properties = Property.objects.filter(type=action, rooms=rooms, location=city, balcony=balcony)[start:end]
 
             ps = PropertySerializers(properties, many=True).data
             res = {
@@ -380,7 +370,7 @@ class PropertyApiPagination(APIView):
             }
             return Response(res)
 
-        elif action == 'sale' and rooms == "null" and city != "null" and balcony == "null":
+        elif rooms != "null" and city == "null" and balcony == "null":
 
             print(rooms, city)
 
@@ -390,7 +380,7 @@ class PropertyApiPagination(APIView):
             start = page_num * page_size
             end = start + page_size
 
-            properties = Property.objects.filter(type='sale', location=city)[start:end]
+            properties = Property.objects.filter(type=action, rooms=rooms)[start:end]
 
             ps = PropertySerializers(properties, many=True).data
             res = {
@@ -400,7 +390,27 @@ class PropertyApiPagination(APIView):
             }
             return Response(res)
 
-        elif action == 'sale' and rooms == "null" and city == "null" and balcony != "null":
+        elif rooms == "null" and city != "null" and balcony == "null":
+
+            print(rooms, city)
+
+            page_size = int(request.GET.get("page_size", 10))
+            page_num = int(request.GET.get("page_num", 0))
+
+            start = page_num * page_size
+            end = start + page_size
+
+            properties = Property.objects.filter(type=action, location=city)[start:end]
+
+            ps = PropertySerializers(properties, many=True).data
+            res = {
+                'data': ps,
+                "next_page": 'n',
+                "has_more": end <= Property.objects.count()
+            }
+            return Response(res)
+
+        elif rooms == "null" and city == "null" and balcony != "null":
             print("test")
 
             page_size = int(request.GET.get("page_size", 10))
@@ -409,7 +419,7 @@ class PropertyApiPagination(APIView):
             start = page_num * page_size
             end = start + page_size
 
-            properties = Property.objects.filter(type='sale', balcony=balcony)[start:end]
+            properties = Property.objects.filter(type=action, balcony=balcony)[start:end]
 
             ps = PropertySerializers(properties, many=True).data
             res = {
@@ -419,7 +429,7 @@ class PropertyApiPagination(APIView):
             }
             return Response(res)
 
-        elif action == 'sale' and rooms != "null" and city != "null" and balcony == "null":
+        elif rooms != "null" and city != "null" and balcony == "null":
             print("test")
 
             page_size = int(request.GET.get("page_size", 10))
@@ -428,7 +438,7 @@ class PropertyApiPagination(APIView):
             start = page_num * page_size
             end = start + page_size
 
-            properties = Property.objects.filter(type='sale', rooms=rooms, location=city)[start:end]
+            properties = Property.objects.filter(type=action, rooms=rooms, location=city)[start:end]
 
             ps = PropertySerializers(properties, many=True).data
             res = {
@@ -438,7 +448,7 @@ class PropertyApiPagination(APIView):
             }
             return Response(res)
 
-        elif action == 'sale' and rooms != "null" and city == "null" and balcony != "null":
+        elif rooms != "null" and city == "null" and balcony != "null":
             print("test")
 
             page_size = int(request.GET.get("page_size", 10))
@@ -447,7 +457,7 @@ class PropertyApiPagination(APIView):
             start = page_num * page_size
             end = start + page_size
 
-            properties = Property.objects.filter(type='sale', rooms=rooms, balcony=balcony)[start:end]
+            properties = Property.objects.filter(type=action, rooms=rooms, balcony=balcony)[start:end]
 
             ps = PropertySerializers(properties, many=True).data
             res = {
@@ -457,7 +467,7 @@ class PropertyApiPagination(APIView):
             }
             return Response(res)
 
-        elif action == 'sale' and rooms == "null" and city != "null" and balcony != "null":
+        elif rooms == "null" and city != "null" and balcony != "null":
             print("test")
 
             page_size = int(request.GET.get("page_size", 10))
@@ -466,7 +476,7 @@ class PropertyApiPagination(APIView):
             start = page_num * page_size
             end = start + page_size
 
-            properties = Property.objects.filter(type='sale', location=city, balcony=balcony)[start:end]
+            properties = Property.objects.filter(type=action, location=city, balcony=balcony)[start:end]
 
             ps = PropertySerializers(properties, many=True).data
             res = {
@@ -476,154 +486,155 @@ class PropertyApiPagination(APIView):
             }
             return Response(res)
 
-        elif action == 'rent' and rooms == "null" and city == "null" and balcony == "null":
-            page_size = int(request.GET.get("page_size", 10))
-            page_num = int(request.GET.get("page_num", 0))
+        # elif action == 'rent' and rooms == "null" and city == "null" and balcony == "null":
+        #     page_size = int(request.GET.get("page_size", 10))
+        #     page_num = int(request.GET.get("page_num", 0))
+        #
+        #     start = page_num * page_size
+        #     end = start + page_size
+        #
+        #     properties = Property.objects.filter(type='rent')[start:end]
+        #
+        #     ps = PropertySerializers(properties, many=True).data
+        #
+        #     res = {
+        #         'data': ps,
+        #         "next_page": 'n',
+        #         "has_more": end <= Property.objects.count()
+        #     }
+        #     return Response(res)
+        #
+        # elif action == 'rent' and rooms != "null" and city != "null" and balcony != "null":
+        #     page_size = int(request.GET.get("page_size", 10))
+        #     page_num = int(request.GET.get("page_num", 0))
+        #
+        #     start = page_num * page_size
+        #     end = start + page_size
+        #
+        #     properties = Property.objects.filter(type='rent', rooms=rooms, city=city, balcony=balcony)[start:end]
+        #
+        #     ps = PropertySerializers(properties, many=True).data
+        #
+        #     res = {
+        #         'data': ps,
+        #         "next_page": 'n',
+        #         "has_more": end <= Property.objects.count()
+        #     }
+        #     return Response(res)
+        #
+        # elif action == 'rent' and rooms != "null" and city == "null" and balcony == "null":
+        #     page_size = int(request.GET.get("page_size", 10))
+        #     page_num = int(request.GET.get("page_num", 0))
+        #
+        #     start = page_num * page_size
+        #     end = start + page_size
+        #
+        #     properties = Property.objects.filter(type='rent', rooms=rooms)[start:end]
+        #
+        #     ps = PropertySerializers(properties, many=True).data
+        #
+        #     res = {
+        #         'data': ps,
+        #         "next_page": 'n',
+        #         "has_more": end <= Property.objects.count()
+        #     }
+        #     return Response(res)
+        #
+        # elif action == 'rent' and rooms == "null" and city != "null" and balcony == "null":
+        #     page_size = int(request.GET.get("page_size", 10))
+        #     page_num = int(request.GET.get("page_num", 0))
+        #
+        #     start = page_num * page_size
+        #     end = start + page_size
+        #
+        #     properties = Property.objects.filter(type='rent', location=city)[start:end]
+        #
+        #     ps = PropertySerializers(properties, many=True).data
+        #
+        #     res = {
+        #         'data': ps,
+        #         "next_page": 'n',
+        #         "has_more": end <= Property.objects.count()
+        #     }
+        #     return Response(res)
+        #
+        # elif action == 'rent' and rooms == "null" and city == "null" and balcony != "null":
+        #     page_size = int(request.GET.get("page_size", 10))
+        #     page_num = int(request.GET.get("page_num", 0))
+        #
+        #     start = page_num * page_size
+        #     end = start + page_size
+        #
+        #     properties = Property.objects.filter(type='rent', balcony=balcony)[start:end]
+        #
+        #     ps = PropertySerializers(properties, many=True).data
+        #
+        #     res = {
+        #         'data': ps,
+        #         "next_page": 'n',
+        #         "has_more": end <= Property.objects.count()
+        #     }
+        #     return Response(res)
+        #
+        # elif action == 'rent' and rooms != "null" and city != "null" and balcony == "null":
+        #     print("test")
+        #
+        #     page_size = int(request.GET.get("page_size", 10))
+        #     page_num = int(request.GET.get("page_num", 0))
+        #
+        #     start = page_num * page_size
+        #     end = start + page_size
+        #
+        #     properties = Property.objects.filter(type='rent', rooms=rooms, location=city)[start:end]
+        #
+        #     ps = PropertySerializers(properties, many=True).data
+        #     res = {
+        #         'data': ps,
+        #         "next_page": 'n',
+        #         "has_more": end <= Property.objects.count()
+        #     }
+        #     return Response(res)
+        #
+        # elif action == 'rent' and rooms != "null" and city == "null" and balcony != "null":
+        #     print("test")
+        #
+        #     page_size = int(request.GET.get("page_size", 10))
+        #     page_num = int(request.GET.get("page_num", 0))
+        #
+        #     start = page_num * page_size
+        #     end = start + page_size
+        #
+        #     properties = Property.objects.filter(type='rent', rooms=rooms, balcony=balcony)[start:end]
+        #
+        #     ps = PropertySerializers(properties, many=True).data
+        #     res = {
+        #         'data': ps,
+        #         "next_page": 'n',
+        #         "has_more": end <= Property.objects.count()
+        #     }
+        #     return Response(res)
+        #
+        # elif action == 'rent' and rooms == "null" and city != "null" and balcony != "null":
+        #     print("test")
+        #
+        #     page_size = int(request.GET.get("page_size", 10))
+        #     page_num = int(request.GET.get("page_num", 0))
+        #
+        #     start = page_num * page_size
+        #     end = start + page_size
+        #
+        #     properties = Property.objects.filter(type='rent', location=city, balcony=balcony)[start:end]
+        #
+        #     ps = PropertySerializers(properties, many=True).data
+        #     res = {
+        #         'data': ps,
+        #         "next_page": 'n',
+        #         "has_more": end <= Property.objects.count()
+        #     }
+        #     return Response(res)
 
-            start = page_num * page_size
-            end = start + page_size
 
-            properties = Property.objects.filter(type='rent')[start:end]
-
-            ps = PropertySerializers(properties, many=True).data
-
-            res = {
-                'data': ps,
-                "next_page": 'n',
-                "has_more": end <= Property.objects.count()
-            }
-            return Response(res)
-
-        elif action == 'rent' and rooms != "null" and city != "null" and balcony != "null":
-            page_size = int(request.GET.get("page_size", 10))
-            page_num = int(request.GET.get("page_num", 0))
-
-            start = page_num * page_size
-            end = start + page_size
-
-            properties = Property.objects.filter(type='rent', rooms=rooms, city=city, balcony=balcony)[start:end]
-
-            ps = PropertySerializers(properties, many=True).data
-
-            res = {
-                'data': ps,
-                "next_page": 'n',
-                "has_more": end <= Property.objects.count()
-            }
-            return Response(res)
-
-        elif action == 'rent' and rooms != "null" and city == "null" and balcony == "null":
-            page_size = int(request.GET.get("page_size", 10))
-            page_num = int(request.GET.get("page_num", 0))
-
-            start = page_num * page_size
-            end = start + page_size
-
-            properties = Property.objects.filter(type='rent', rooms=rooms)[start:end]
-
-            ps = PropertySerializers(properties, many=True).data
-
-            res = {
-                'data': ps,
-                "next_page": 'n',
-                "has_more": end <= Property.objects.count()
-            }
-            return Response(res)
-
-        elif action == 'rent' and rooms == "null" and city != "null" and balcony == "null":
-            page_size = int(request.GET.get("page_size", 10))
-            page_num = int(request.GET.get("page_num", 0))
-
-            start = page_num * page_size
-            end = start + page_size
-
-            properties = Property.objects.filter(type='rent', location=city)[start:end]
-
-            ps = PropertySerializers(properties, many=True).data
-
-            res = {
-                'data': ps,
-                "next_page": 'n',
-                "has_more": end <= Property.objects.count()
-            }
-            return Response(res)
-
-        elif action == 'rent' and rooms == "null" and city == "null" and balcony != "null":
-            page_size = int(request.GET.get("page_size", 10))
-            page_num = int(request.GET.get("page_num", 0))
-
-            start = page_num * page_size
-            end = start + page_size
-
-            properties = Property.objects.filter(type='rent', balcony=balcony)[start:end]
-
-            ps = PropertySerializers(properties, many=True).data
-
-            res = {
-                'data': ps,
-                "next_page": 'n',
-                "has_more": end <= Property.objects.count()
-            }
-            return Response(res)
-
-        elif action == 'rent' and rooms != "null" and city != "null" and balcony == "null":
-            print("test")
-
-            page_size = int(request.GET.get("page_size", 10))
-            page_num = int(request.GET.get("page_num", 0))
-
-            start = page_num * page_size
-            end = start + page_size
-
-            properties = Property.objects.filter(type='rent', rooms=rooms, location=city)[start:end]
-
-            ps = PropertySerializers(properties, many=True).data
-            res = {
-                'data': ps,
-                "next_page": 'n',
-                "has_more": end <= Property.objects.count()
-            }
-            return Response(res)
-
-        elif action == 'rent' and rooms != "null" and city == "null" and balcony != "null":
-            print("test")
-
-            page_size = int(request.GET.get("page_size", 10))
-            page_num = int(request.GET.get("page_num", 0))
-
-            start = page_num * page_size
-            end = start + page_size
-
-            properties = Property.objects.filter(type='rent', rooms=rooms, balcony=balcony)[start:end]
-
-            ps = PropertySerializers(properties, many=True).data
-            res = {
-                'data': ps,
-                "next_page": 'n',
-                "has_more": end <= Property.objects.count()
-            }
-            return Response(res)
-
-        elif action == 'rent' and rooms == "null" and city != "null" and balcony != "null":
-            print("test")
-
-            page_size = int(request.GET.get("page_size", 10))
-            page_num = int(request.GET.get("page_num", 0))
-
-            start = page_num * page_size
-            end = start + page_size
-
-            properties = Property.objects.filter(type='rent', location=city, balcony=balcony)[start:end]
-
-            ps = PropertySerializers(properties, many=True).data
-            res = {
-                'data': ps,
-                "next_page": 'n',
-                "has_more": end <= Property.objects.count()
-            }
-            return Response(res)
-
-
+@method_decorator(cache_page(60*10), name="dispatch")
 class PropertyOfUserApiPagination(APIView):
     @classmethod
     def get(cls, request):
@@ -645,6 +656,7 @@ class PropertyOfUserApiPagination(APIView):
         return Response(res)
 
 
+@method_decorator(cache_page(60*10), name="dispatch")
 class TipsOfUser(APIView):
     @classmethod
     def get(cls, request):
@@ -667,6 +679,7 @@ class TipsOfUser(APIView):
         return Response(res)
 
 
+@method_decorator(cache_page(60*10), name="dispatch")
 class UserApi(APIView):
     @classmethod
     def get(cls, request, action):
