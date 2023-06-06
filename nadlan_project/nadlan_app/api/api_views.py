@@ -36,7 +36,7 @@ def signup(req):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def private(req):
-    return Response({'msg': f"ok. user is: {req.user.username}", 'user': {req.user.username}, 'id': {req.user.id}})
+    return Response({'msg': f"ok. user is: {req.user.username}", 'user': {req.user.username}, 'id': {req.user.id}, "superuser": req.user.is_superuser})
 
 
 class PropertyApi(APIView):
