@@ -12,13 +12,23 @@ from django.views.decorators.cache import cache_page
 
 from ..models import Property, Photo, Contact, Tip
 from .serializers import PropertySerializers, PhotoSerializers, ContactSerializers, TipSerializers, UserSerializers
-from django.conf import settings
+# from django.conf import settings
 
 # STATIC_PATH = str(settings.BASE_DIR) + r"//nadlan_app//static//"
 
 
 @api_view(['POST'])
 def signup(req):
+    """
+    Sign up a new user.
+
+    Parameters:
+    - req: The HTTP request object containing user data.
+
+    Returns:
+    - Response: The HTTP response object containing a success or error message.
+    """
+    # Function code
     try:
         username = req.data.get("username")
         password = req.data.get("password")
@@ -40,11 +50,39 @@ def signup(req):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def private(req):
-    return Response({'msg': f"ok. user is: {req.user.username}", 'user': {req.user.username}, 'id': {req.user.id}, "superuser": req.user.is_superuser})
+    """
+    Get user information for authenticated users.
+
+    Parameters:
+    - req: The HTTP request object.
+
+    Returns:
+    - Response: The HTTP response object containing the user information.
+    """
+    # Function code
+    return Response({'msg': f"ok. user is: {req.user.username}", 'user': {req.user.username}, 'id': {req.user.id},
+                     "superuser": req.user.is_superuser})
 
 
 @method_decorator(cache_page(60*10), name="dispatch")
 class PropertyApi(APIView):
+    """
+    API view for managing properties.
+
+    Methods:
+    - get: Retrieve properties or a specific property.
+    - post: Create a new property.
+    - put: Update an existing property.
+    - delete: Delete a property.
+
+    Parameters:
+    - req: The HTTP request object.
+    - action: The action to perform (e.g., "get", "add", "edit", "delete").
+
+    Returns:
+    - Response: The HTTP response object.
+    """
+    # Class code
     # authentication_classes = [TokenAuthentication]
     # permission_classes = [IsAuthenticated]
 
@@ -114,12 +152,26 @@ class PropertyApi(APIView):
         else:
             return Response(f"cannot use '{action}' action with the current method. try to use with /delete ")
 
-    # def dispatch(self, request, *args, **kwargs):
-    #     pass
-
 
 @method_decorator(cache_page(60*10), name="dispatch")
 class ContactApi(APIView):
+    """
+    API view for managing contacts.
+
+    Methods:
+    - get: Retrieve contacts or a specific contact.
+    - post: Create a new contact.
+    - put: Update an existing contact.
+    - delete: Delete a contact.
+
+    Parameters:
+    - req: The HTTP request object.
+    - action: The action to perform (e.g., "get", "add", "edit", "delete").
+
+    Returns:
+    - Response: The HTTP response object.
+    """
+    # Class code
     # authentication_classes = [TokenAuthentication]
     # permission_classes = [IsAuthenticated]
 
@@ -189,12 +241,26 @@ class ContactApi(APIView):
         else:
             return Response(f"cannot use '{action}' action with the current method. try to use with /delete ")
 
-    # def dispatch(self, request, *args, **kwargs):
-    #     pass
-
 
 @method_decorator(cache_page(60*10), name="dispatch")
 class TipApi(APIView):
+    """
+    API view for managing tips.
+
+    Methods:
+    - get: Retrieve tips or a specific tip.
+    - post: Create a new tip.
+    - put: Update an existing tip.
+    - delete: Delete a tip.
+
+    Parameters:
+    - req: The HTTP request object.
+    - action: The action to perform (e.g., "get", "add", "edit", "delete").
+
+    Returns:
+    - Response: The HTTP response object.
+    """
+    # Class code
     # authentication_classes = [TokenAuthentication]
     # permission_classes = [IsAuthenticated]
 
@@ -202,7 +268,6 @@ class TipApi(APIView):
     def get(cls, req, action=None):
         if action == 'get':
             try:
-                print("server")
                 if "id" in req.query_params:
                     id = req.query_params.get("id")
                     tip = Tip.objects.get(id=id)
@@ -283,28 +348,27 @@ class TipApi(APIView):
         else:
             return Response(f"cannot use '{action}' action with the current method. try to use with /delete ")
 
-    # def dispatch(self, request, *args, **kwargs):
-    #     pass
-
 
 @method_decorator(cache_page(60*10), name="dispatch")
 class PhotoApi(APIView):
+    """
+    API view for managing photos.
+
+    Methods:
+    - get: Retrieve photos for a specific property.
+    - post: Upload a new photo for a property.
+
+    Parameters:
+    - request: The HTTP request object.
+
+    Returns:
+    - Response: The HTTP response object.
+    """
+    # Class code
     @classmethod
     def get(cls, request):
         id = int(request.GET.get("id"))
-
-        # start = page * page_size
-        # end = page * page_size + 10
-
-        # properties = Property.objects.filter(type='sale')[start:end]
         images = Photo.objects.filter(property=id)
-        # properties = ()
-        #
-        # for i in range(len(images)):
-        #     print(Property.objects.filter(id=images[i].property.id)[0])
-        #     properties.append(Property.objects.filter(id=images[i].property.id)[0])
-        # print(properties)
-
         ps = PhotoSerializers(images, many=True).data
 
         res = {
@@ -329,10 +393,15 @@ class PhotoApi(APIView):
 
 @method_decorator(cache_page(60*10), name="dispatch")
 class PropertyApiPagination(APIView):
+    """
+    API view for pagination and filtering properties.
+    """
     @classmethod
     def get(cls, request, action, rooms, city, balcony):
+        """
+        Get method for filtering and pagination of properties.
+        """
         if rooms == "null" and city == "null" and balcony == "null":
-            print("server")
             page_size = int(request.GET.get("page_size", 10))
             page_num = int(request.GET.get("page_num", 0))
 
@@ -636,6 +705,20 @@ class PropertyApiPagination(APIView):
 
 @method_decorator(cache_page(60*10), name="dispatch")
 class PropertyOfUserApiPagination(APIView):
+    """
+    API view for pagination and filtering properties of a specific user.
+
+    Methods:
+    - get: get method for filtering and paginating properties of a specific user.
+
+    Parameters:
+    - request (HttpRequest): The HTTP request object.
+
+    Returns:
+    - Response: The response containing the filtered and paginated properties.
+    """
+    # Class code
+
     @classmethod
     def get(cls, request):
         id = request.GET.get("id")
@@ -658,6 +741,20 @@ class PropertyOfUserApiPagination(APIView):
 
 @method_decorator(cache_page(60*10), name="dispatch")
 class TipsOfUser(APIView):
+    """
+    API view for pagination and filtering tips of a specific user.
+
+    Methods:
+    - get: get  method for filtering and paginating tips of a specific user.
+
+    Parameters:
+    - request (HttpRequest): The HTTP request object.
+
+    Returns:
+    - Response: The response containing the filtered and paginated tips.
+    """
+    # Class code
+
     @classmethod
     def get(cls, request):
         id = request.GET.get("id")
@@ -681,8 +778,21 @@ class TipsOfUser(APIView):
 
 @method_decorator(cache_page(60*10), name="dispatch")
 class UserApi(APIView):
+    """
+    API view for retrieving and updating user information.
+    """
     @classmethod
     def get(cls, request, action):
+        """
+        Get method for retrieving user information.
+
+        Parameters:
+            request (HttpRequest): The HTTP request object.
+            action (str): The action to perform.
+
+        Returns:
+            Response: The response containing the user information.
+        """
         if action == 'user':
             id = request.GET.get("id")
 
@@ -712,6 +822,16 @@ class UserApi(APIView):
 
     @classmethod
     def put(cls, request, action):
+        """
+        Put method for updating user information.
+
+        Parameters:
+            request (HttpRequest): The HTTP request object.
+            action (str): The action to perform.
+
+        Returns:
+            Response: The response indicating the success of the update or an error message.
+        """
         if action == "edit":
             try:
                 id = request.query_params.get("id")
