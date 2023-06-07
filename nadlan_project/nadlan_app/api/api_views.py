@@ -101,6 +101,14 @@ class PropertyApi(APIView):
                     return Response(ps.data)
             except Exception as e:
                 return Response(f"{e}")
+        elif action == 'home':
+            try:
+                property = Property.objects.filter()[:3]
+                ps = PropertySerializers(property, many=True)
+                return Response(ps.data)
+            except Exception as e:
+                return Response(f"{e}")
+
         else:
             return Response(f"cannot use '{action}' action with the current method. try to use with /get ")
 
