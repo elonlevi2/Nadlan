@@ -96,14 +96,14 @@ class PropertyApi(APIView):
                     ps = PropertySerializers(property)
                     return Response(ps.data)
                 else:
-                    all_propertys = Property.objects.all()
-                    ps = PropertySerializers(all_propertys, many=True)
+                    all_properties = Property.objects.all()
+                    ps = PropertySerializers(all_properties, many=True)
                     return Response(ps.data)
             except Exception as e:
                 return Response(f"{e}")
         elif action == 'home':
             try:
-                property = Property.objects.filter()[:3]
+                property = Property.objects.order_by('-id')[:3]
                 ps = PropertySerializers(property, many=True)
                 return Response(ps.data)
             except Exception as e:
