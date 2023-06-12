@@ -9,9 +9,10 @@ from rest_framework.authtoken.models import Token
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
-
 from ..models import Property, Photo, Contact, Tip
 from .serializers import PropertySerializers, PhotoSerializers, ContactSerializers, TipSerializers, UserSerializers
+
+
 # from django.conf import settings
 
 # STATIC_PATH = str(settings.BASE_DIR) + r"//nadlan_app//static//"
@@ -64,7 +65,7 @@ def private(req):
                      "superuser": req.user.is_superuser})
 
 
-@method_decorator(cache_page(60*10), name="dispatch")
+@method_decorator(cache_page(60), name="dispatch")
 class PropertyApi(APIView):
     """
     API view for managing properties.
@@ -82,6 +83,7 @@ class PropertyApi(APIView):
     Returns:
     - Response: The HTTP response object.
     """
+
     # Class code
     # authentication_classes = [TokenAuthentication]
     # permission_classes = [IsAuthenticated]
@@ -161,7 +163,7 @@ class PropertyApi(APIView):
             return Response(f"cannot use '{action}' action with the current method. try to use with /delete ")
 
 
-@method_decorator(cache_page(60*10), name="dispatch")
+@method_decorator(cache_page(60), name="dispatch")
 class ContactApi(APIView):
     """
     API view for managing contacts.
@@ -179,6 +181,7 @@ class ContactApi(APIView):
     Returns:
     - Response: The HTTP response object.
     """
+
     # Class code
     # authentication_classes = [TokenAuthentication]
     # permission_classes = [IsAuthenticated]
@@ -250,7 +253,7 @@ class ContactApi(APIView):
             return Response(f"cannot use '{action}' action with the current method. try to use with /delete ")
 
 
-@method_decorator(cache_page(60*10), name="dispatch")
+@method_decorator(cache_page(60), name="dispatch")
 class TipApi(APIView):
     """
     API view for managing tips.
@@ -268,6 +271,7 @@ class TipApi(APIView):
     Returns:
     - Response: The HTTP response object.
     """
+
     # Class code
     # authentication_classes = [TokenAuthentication]
     # permission_classes = [IsAuthenticated]
@@ -357,7 +361,7 @@ class TipApi(APIView):
             return Response(f"cannot use '{action}' action with the current method. try to use with /delete ")
 
 
-@method_decorator(cache_page(60*10), name="dispatch")
+@method_decorator(cache_page(60), name="dispatch")
 class PhotoApi(APIView):
     """
     API view for managing photos.
@@ -372,6 +376,7 @@ class PhotoApi(APIView):
     Returns:
     - Response: The HTTP response object.
     """
+
     # Class code
     @classmethod
     def get(cls, request):
@@ -399,11 +404,12 @@ class PhotoApi(APIView):
         return Response("Photo uploaded!")
 
 
-@method_decorator(cache_page(60*10), name="dispatch")
+@method_decorator(cache_page(60), name="dispatch")
 class PropertyApiPagination(APIView):
     """
     API view for pagination and filtering properties.
     """
+
     @classmethod
     def get(cls, request, action, rooms, city, balcony):
         """
@@ -711,7 +717,7 @@ class PropertyApiPagination(APIView):
         #     return Response(res)
 
 
-@method_decorator(cache_page(60*10), name="dispatch")
+@method_decorator(cache_page(60), name="dispatch")
 class PropertyOfUserApiPagination(APIView):
     """
     API view for pagination and filtering properties of a specific user.
@@ -725,6 +731,7 @@ class PropertyOfUserApiPagination(APIView):
     Returns:
     - Response: The response containing the filtered and paginated properties.
     """
+
     # Class code
 
     @classmethod
@@ -747,7 +754,7 @@ class PropertyOfUserApiPagination(APIView):
         return Response(res)
 
 
-@method_decorator(cache_page(60*10), name="dispatch")
+@method_decorator(cache_page(60), name="dispatch")
 class TipsOfUser(APIView):
     """
     API view for pagination and filtering tips of a specific user.
@@ -761,6 +768,7 @@ class TipsOfUser(APIView):
     Returns:
     - Response: The response containing the filtered and paginated tips.
     """
+
     # Class code
 
     @classmethod
@@ -784,11 +792,12 @@ class TipsOfUser(APIView):
         return Response(res)
 
 
-@method_decorator(cache_page(60*10), name="dispatch")
+@method_decorator(cache_page(60), name="dispatch")
 class UserApi(APIView):
     """
     API view for retrieving and updating user information.
     """
+
     @classmethod
     def get(cls, request, action):
         """
@@ -811,6 +820,7 @@ class UserApi(APIView):
                 'data': us,
             }
             return Response(res)
+
         elif action == "brokers":
             page_size = int(request.GET.get("page_size", 10))
             page_num = int(request.GET.get("page_num", 0))
@@ -825,6 +835,16 @@ class UserApi(APIView):
                 'data': us,
                 "next_page": 'n',
                 "has_more": end <= User.objects.count()
+            }
+            return Response(res)
+
+        elif action == "all":
+            user = User.objects.all()
+
+            us = UserSerializers(user, many=True).data
+            res = {
+                'data': us,
+                "next_page": 'n',
             }
             return Response(res)
 
@@ -854,3 +874,65 @@ class UserApi(APIView):
                 return Response(f"{e}")
         else:
             return Response(f"cannot use '{action}' action with the current method. try to use with /edit ")
+
+    @classmethod
+    def delete(cls, request, action=None):
+        """
+        Delete method for deleting user information.
+
+        Parameters:
+            request (HttpRequest): The HTTP request object.
+            action (str): The action to perform.
+
+        Returns:
+            Response: The response indicating the success of the delete or an error message.
+        """
+        if action == 'delete':
+            try:
+                id = request.query_params.get("id")
+                user_instance = User.objects.get(id=id)
+                user_instance.delete()
+                return Response("objects deleted")
+
+            except Exception as e:
+                return Response(f"{e}")
+        else:
+            return Response(f"cannot use '{action}' action with the current method. try to use with /delete ")
+
+
+class DashboardApi(APIView):
+    """
+    This API provides the main dashboard page.
+    """
+
+    @classmethod
+    def get(cls, request, action=None):
+        """
+        Handles GET requests.
+
+        Parameters:
+        - request: The request object.
+        - action: The action to perform.
+
+        Returns:
+        - Response: The response containing the requested data or an error message.
+        """
+
+        if action == 'users':
+            try:
+                users = User.objects.count()
+                return Response(int(users))
+            except Exception as e:
+                return Response(f"{e}")
+        elif action == 'property_sale':
+            try:
+                property = Property.objects.filter(type='sale').count()
+                return Response(property)
+            except Exception as e:
+                return Response(f"{e}")
+        elif action == 'property_rent':
+            try:
+                property = Property.objects.filter(type='rent').count()
+                return Response(property)
+            except Exception as e:
+                return Response(f"{e}")
