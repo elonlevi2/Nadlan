@@ -65,7 +65,7 @@ def private(req):
                      "superuser": req.user.is_superuser})
 
 
-@method_decorator(cache_page(60), name="dispatch")
+# @method_decorator(cache_page(60), name="dispatch")
 class PropertyApi(APIView):
     """
     API view for managing properties.
@@ -163,7 +163,7 @@ class PropertyApi(APIView):
             return Response(f"cannot use '{action}' action with the current method. try to use with /delete ")
 
 
-@method_decorator(cache_page(60), name="dispatch")
+# @method_decorator(cache_page(60), name="dispatch")
 class ContactApi(APIView):
     """
     API view for managing contacts.
@@ -253,7 +253,7 @@ class ContactApi(APIView):
             return Response(f"cannot use '{action}' action with the current method. try to use with /delete ")
 
 
-@method_decorator(cache_page(60), name="dispatch")
+# @method_decorator(cache_page(60), name="dispatch")
 class TipApi(APIView):
     """
     API view for managing tips.
@@ -361,7 +361,7 @@ class TipApi(APIView):
             return Response(f"cannot use '{action}' action with the current method. try to use with /delete ")
 
 
-@method_decorator(cache_page(60), name="dispatch")
+# @method_decorator(cache_page(60), name="dispatch")
 class PhotoApi(APIView):
     """
     API view for managing photos.
@@ -404,7 +404,7 @@ class PhotoApi(APIView):
         return Response("Photo uploaded!")
 
 
-@method_decorator(cache_page(60), name="dispatch")
+# @method_decorator(cache_page(60), name="dispatch")
 class PropertyApiPagination(APIView):
     """
     API view for pagination and filtering properties.
@@ -717,7 +717,7 @@ class PropertyApiPagination(APIView):
         #     return Response(res)
 
 
-@method_decorator(cache_page(60), name="dispatch")
+# @method_decorator(cache_page(60), name="dispatch")
 class PropertyOfUserApiPagination(APIView):
     """
     API view for pagination and filtering properties of a specific user.
@@ -754,7 +754,7 @@ class PropertyOfUserApiPagination(APIView):
         return Response(res)
 
 
-@method_decorator(cache_page(60), name="dispatch")
+# @method_decorator(cache_page(60), name="dispatch")
 class TipsOfUser(APIView):
     """
     API view for pagination and filtering tips of a specific user.
@@ -792,7 +792,7 @@ class TipsOfUser(APIView):
         return Response(res)
 
 
-@method_decorator(cache_page(60), name="dispatch")
+# @method_decorator(cache_page(60), name="dispatch")
 class UserApi(APIView):
     """
     API view for retrieving and updating user information.
