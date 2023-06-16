@@ -140,7 +140,7 @@ class PropertyApi(APIView):
                 ps = PropertySerializers(data=req.data, instance=property_instance)
                 if ps.is_valid():
                     ps.save()
-                    return Response("objects updated")
+                    return Response({"msg": "objects updated", "id": ps.data['id']})
                 else:
                     return Response(f"{ps.errors}")
             except Exception as e:
