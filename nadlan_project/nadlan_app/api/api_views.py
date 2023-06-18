@@ -924,15 +924,24 @@ class DashboardApi(APIView):
                 return Response(int(users))
             except Exception as e:
                 return Response(f"{e}")
+
         elif action == 'property_sale':
             try:
                 property = Property.objects.filter(type='sale').count()
                 return Response(property)
             except Exception as e:
                 return Response(f"{e}")
+
         elif action == 'property_rent':
             try:
                 property = Property.objects.filter(type='rent').count()
                 return Response(property)
+            except Exception as e:
+                return Response(f"{e}")
+
+        elif action == 'messages':
+            try:
+                contact = Contact.objects.count()
+                return Response(contact)
             except Exception as e:
                 return Response(f"{e}")
