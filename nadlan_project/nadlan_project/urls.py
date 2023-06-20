@@ -23,4 +23,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('nadlan/', include('nadlan_app.urls')),
     path('api/', include('nadlan_app.api.urls_api')),
-    path('', RedirectView.as_view(url='nadlan/home'))]
+    # path('', RedirectView.as_view(url='nadlan/home'))
+]
