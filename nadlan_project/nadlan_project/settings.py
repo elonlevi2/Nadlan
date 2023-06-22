@@ -133,8 +133,6 @@ USE_TZ = True
 STATIC_URL = 'nadlan_app/static/'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'property_images/')
 
-# MEDIA_URL = 'nadlan_app/property_images/'
-# MEDIA_ROOT = os.path.join(BASE_DIR, "property_images/")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
