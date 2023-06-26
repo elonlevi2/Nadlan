@@ -589,7 +589,7 @@ class PropertyApiPagination(APIView):
             start = page_num * page_size
             end = start + page_size
 
-            properties = Property.objects.filter(type=action,rooms=rooms, location=city, balcony=balcony)[start:end]
+            properties = Property.objects.filter(type=action, rooms=rooms, location=city, balcony=balcony)[start:end]
 
             ps = PropertySerializers(properties, many=True).data
             res = {
@@ -643,7 +643,8 @@ class PropertyApiPagination(APIView):
             start = page_num * page_size
             end = start + page_size
 
-            properties = Property.objects.filter(type=action, location=city, balcony=balcony, price__lte=price)[start:end]
+            properties = Property.objects.filter(type=action, location=city, balcony=balcony, price__lte=price)[
+                         start:end]
 
             ps = PropertySerializers(properties, many=True).data
             res = {
@@ -706,6 +707,38 @@ class PropertyApiPagination(APIView):
                 "has_more": end <= Property.objects.count()
             }
             return Response(res)
+
+    @classmethod
+    def post(cls, request, action):
+
+        page_size = int(request.GET.get("page_size", 10))
+        page_num = int(request.GET.get("page_num", 0))
+
+        start = page_num * page_size
+        end = start + page_size
+
+        data = request.data["filter"]
+        ps = Property.objects.filter(type=action)
+
+
+        if data['rooms'] != None:
+            ps = ps.filter(rooms=data['rooms'])
+        if data['city'] != None:
+            ps = ps.filter(location=data['city'])
+        if data['balcony'] != None:
+            ps = ps.filter(balcony=data['balcony'])
+        if data['price'] != None:
+            ps = ps.filter(price__lte=data['price'])
+
+        ps_s = PropertySerializers(ps[start:end], many=True).data
+
+        res = {
+            'data': ps_s,
+            "next_page": 'n',
+            "has_more": end <= Property.objects.count()
+        }
+
+        return Response(res)
 
 
 # @method_decorator(cache_page(60), name="dispatch")
