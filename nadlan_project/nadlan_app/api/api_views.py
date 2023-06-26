@@ -123,6 +123,7 @@ class PropertyApi(APIView):
                 ps = PropertySerializers(data=req.data)
                 if ps.is_valid():
                     ps.save()
+                    cache.delete('property')
                     return Response({"msg": "objects Created", "id": ps.data['id']})
                 else:
                     return Response(f"{ps.errors}")
@@ -140,6 +141,7 @@ class PropertyApi(APIView):
                 ps = PropertySerializers(data=req.data, instance=property_instance)
                 if ps.is_valid():
                     ps.save()
+                    cache.delete('property')
                     return Response({"msg": "objects updated", "id": ps.data['id']})
                 else:
                     return Response(f"{ps.errors}")
@@ -155,6 +157,7 @@ class PropertyApi(APIView):
                 id = req.query_params.get("id")
                 property_instance = Property.objects.get(id=id)
                 property_instance.delete()
+                cache.delete('property')
                 return Response("objects deleted")
 
             except Exception as e:
@@ -425,7 +428,7 @@ class PropertyApiPagination(APIView):
             properties = Property.objects.filter(type=action)[start:end]
 
             ps = PropertySerializers(properties, many=True).data
-
+            cache.set('property', ps)
             res = {
                 'data': ps,
                 "next_page": 'n',
