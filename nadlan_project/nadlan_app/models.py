@@ -13,7 +13,7 @@ class Property(models.Model):
     balcony = models.CharField(max_length=10, null=False, blank=False)
     description = models.CharField(max_length=255, null=False, blank=False)
     type = models.CharField(max_length=10, null=False, blank=False)
-    real_estate = models.ForeignKey(related_name="property_user", null=False, on_delete=models.RESTRICT, to=User)
+    real_estate = models.ForeignKey(related_name="property_user", null=False, on_delete=models.CASCADE, to=User)
     phone = models.CharField(max_length=10, null=False, blank=False)
 
     def __str__(self):
@@ -26,7 +26,7 @@ class Property(models.Model):
 class Tip(models.Model):
     title = models.CharField(max_length=255)
     content = models.CharField(null=False, blank=False, max_length=2000)
-    real_estate = models.ForeignKey(related_name="tip_user", null=False, on_delete=models.RESTRICT, to=User)
+    real_estate = models.ForeignKey(related_name="tip_user", null=False, on_delete=models.CASCADE, to=User)
 
     def __str__(self):
         return f"{self.id} - {self.title}"
