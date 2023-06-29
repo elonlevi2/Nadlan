@@ -105,9 +105,13 @@ class PropertyApi(APIView):
                 return Response(f"{e}")
         elif action == 'home':
             try:
-                property = Property.objects.order_by('-id')[:3]
-                ps = PropertySerializers(property, many=True)
-                return Response(ps.data)
+                property_counts = Property.objects.count()
+                if property_counts > 3:
+                    property = Property.objects.order_by('-id')[:3]
+                    ps = PropertySerializers(property, many=True)
+                    return Response(ps.data)
+                else:
+                    return Response('false')
             except Exception as e:
                 return Response(f"{e}")
 
