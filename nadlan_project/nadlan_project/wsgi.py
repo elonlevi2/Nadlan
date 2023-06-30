@@ -1,5 +1,5 @@
 """
-WSGI config for nadlan_project project.
+WSGI config.py for nadlan_project project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

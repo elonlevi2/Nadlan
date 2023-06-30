@@ -36,7 +36,7 @@ class Tip(models.Model):
 
 
 class Photo(models.Model):
-    image = models.ImageField(null=False, blank=False, upload_to='nadlan_app/static/')
+    image = models.CharField(null=False, blank=False, max_length=20)
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='photos')
 
     def __str__(self):

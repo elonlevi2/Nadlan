@@ -22,4 +22,5 @@ urlpatterns = [
     path("contact/<str:action>", api_views.ContactApi.as_view(), name='contact'),
     path("dashboard/<str:action>", api_views.DashboardApi.as_view(), name='dashboard'),
 
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]
+# + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

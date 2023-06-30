@@ -99,7 +99,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'nadlan',
         'USER': 'postgres',
-        'PASSWORD': 'Elon1125',
+        'PASSWORD': os.environ.get('DB_PASSWORD'),
         'HOST': 'database-1.cttgvbxl1usq.eu-central-1.rds.amazonaws.com',
         'PORT': '5432',
     }
@@ -140,8 +140,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'nadlan_app/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'property_images/')
+STATIC_URL = '/static/'
 
 
 # Default primary key field type

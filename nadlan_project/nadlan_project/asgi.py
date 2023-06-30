@@ -1,5 +1,5 @@
 """
-ASGI config for nadlan_project project.
+ASGI config.py for nadlan_project project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
