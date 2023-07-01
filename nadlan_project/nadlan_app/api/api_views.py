@@ -401,7 +401,6 @@ class PhotoApi(APIView):
     def post(cls, request):
         id = int(request.GET.get("id"))
         for i in request.FILES:
-            print(request.FILES[i].file)
             s3_client.upload_fileobj(request.FILES[i].file, Bucket="nadlans3", Key=f"properties/{i}")
             p = Property.objects.filter(id=id)
             Photo.objects.create(image=f'{i}', property=p[0])
@@ -427,23 +426,23 @@ class PropertyApiPagination(APIView):
 
         data = request.data["filter"]
 
-        ps = Property.objects.filter(type=action)
+        properties_list = Property.objects.filter(type=action)
 
         if data['rooms'] is not None:
-            ps = ps.filter(rooms=data['rooms'])
+            properties_list = properties_list.filter(rooms=data['rooms'])
         if data['city'] is not None:
-            ps = ps.filter(location=data['city'])
+            properties_list = properties_list.filter(location=data['city'])
         if data['balcony'] is not None:
-            ps = ps.filter(balcony=data['balcony'])
+            properties_list = properties_list.filter(balcony=data['balcony'])
         if data['price'] is not None:
-            ps = ps.filter(price__lte=data['price'])
+            properties_list = properties_list.filter(price__lte=data['price'])
 
-        ps_s = PropertySerializers(ps[start:end], many=True).data
+        properties_list_s = PropertySerializers(properties_list[start:end], many=True).data
 
-        cache.set('properties', ps_s)
+        cache.set('properties', properties_list_s)
 
         res = {
-            'data': ps_s,
+            'data': properties_list_s,
             "has_more": end <= Property.objects.count()
         }
 
