@@ -129,6 +129,7 @@ class PropertyApi(APIView):
                 if ps.is_valid():
                     ps.save()
                     cache.delete('properties')
+                    cache.delete('properties_user')
                     return Response({"msg": "objects Created", "id": ps.data['id']})
                 else:
                     return Response(f"{ps.errors}")
@@ -147,6 +148,7 @@ class PropertyApi(APIView):
                 if ps.is_valid():
                     ps.save()
                     cache.delete('properties')
+                    cache.delete('properties_user')
                     return Response({"msg": "objects updated", "id": ps.data['id']})
                 else:
                     return Response(f"{ps.errors}")
@@ -163,6 +165,7 @@ class PropertyApi(APIView):
                 property_instance = Property.objects.get(id=id)
                 property_instance.delete()
                 cache.delete('properties')
+                cache.delete('properties_user')
                 return Response("objects deleted")
 
             except Exception as e:
@@ -310,6 +313,8 @@ class TipApi(APIView):
 
             ts = TipSerializers(tips, many=True).data
 
+            cache.set('tips', ts)
+
             res = {
                 'data': ts,
                 "next_page": 'n',
@@ -329,6 +334,8 @@ class TipApi(APIView):
                 ts = TipSerializers(data=req.data)
                 if ts.is_valid():
                     ts.save()
+                    cache.delete('tips')
+                    cache.delete('tips_user')
                     return Response({'msg': "objects Created", 'status': 'success'})
                 else:
                     return Response(f"{ts.errors}")
@@ -346,6 +353,8 @@ class TipApi(APIView):
                 ts = TipSerializers(data=req.data, instance=tip_instance)
                 if ts.is_valid():
                     ts.save()
+                    cache.delete('tips')
+                    cache.delete('tips_user')
                     return Response("objects updated")
                 else:
                     return Response(f"{ts.errors}")
@@ -361,6 +370,8 @@ class TipApi(APIView):
                 id = req.query_params.get("id")
                 tip_instance = Tip.objects.get(id=id)
                 tip_instance.delete()
+                cache.delete('tips')
+                cache.delete('tips_user')
                 return Response("objects deleted")
 
             except Exception as e:
@@ -416,8 +427,6 @@ class PropertyApiPagination(APIView):
 
     @classmethod
     def post(cls, request, action):
-        print("server")
-
         page_size = int(request.GET.get("page_size", 10))
         page_num = int(request.GET.get("page_num", 0))
 
@@ -478,6 +487,8 @@ class PropertyOfUserApiPagination(APIView):
         properties = Property.objects.filter(type='sale', real_estate=id)[start:end]
 
         ps = PropertySerializers(properties, many=True).data
+
+        cache.set('properties_user', ps)
         res = {
             'data': ps,
             "next_page": 'n',
@@ -486,7 +497,7 @@ class PropertyOfUserApiPagination(APIView):
         return Response(res)
 
 
-# @method_decorator(cache_page(60), name="dispatch")
+# @method_decorator(cache_page(60*5), name="dispatch")
 class TipsOfUser(APIView):
     """
     API view for pagination and filtering tips of a specific user.
@@ -515,6 +526,7 @@ class TipsOfUser(APIView):
         tips = Tip.objects.filter(real_estate=id)[start:end]
 
         ts = TipSerializers(tips, many=True).data
+        cache.set('tips_user', ts)
 
         res = {
             'data': ts,
@@ -524,7 +536,7 @@ class TipsOfUser(APIView):
         return Response(res)
 
 
-# @method_decorator(cache_page(60), name="dispatch")
+# @method_decorator(cache_page(60*5), name="dispatch")
 class UserApi(APIView):
     """
     API view for retrieving and updating user information.
