@@ -185,3 +185,6 @@ CACHES = {
         "TIMEOUT": None,
     }
 }
+
+CSRF_TRUSTED_ORIGINS = ['http://18.194.173.51']
+
