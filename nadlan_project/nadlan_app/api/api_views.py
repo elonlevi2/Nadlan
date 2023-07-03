@@ -484,7 +484,7 @@ class PropertyOfUserApiPagination(APIView):
         start = page_num * page_size
         end = start + page_size
 
-        properties = Property.objects.filter(type='sale', real_estate=id)[start:end]
+        properties = Property.objects.filter(real_estate=id)[start:end]
 
         ps = PropertySerializers(properties, many=True).data
 
