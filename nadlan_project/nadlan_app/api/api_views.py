@@ -8,7 +8,8 @@ from rest_framework.authtoken.models import Token
 from django.core.cache import cache
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-
+from PIL import Image
+import io
 from ..models import Property, Photo, Contact, Tip
 from .serializers import PropertySerializers, PhotoSerializers, ContactSerializers, TipSerializers, UserSerializers
 import boto3
@@ -380,6 +381,16 @@ class TipApi(APIView):
             return Response(f"cannot use '{action}' action with the current method. try to use with /delete ")
 
 
+def compress_image(image):
+    image.thumbnail((800, 800))
+
+    output = io.BytesIO()
+    image.save(output, format='JPEG')
+    output.seek(0)
+
+    return output
+
+
 # @method_decorator(cache_page(60), name="dispatch")
 class PhotoApi(APIView):
     """
@@ -412,7 +423,12 @@ class PhotoApi(APIView):
     def post(cls, request):
         id = int(request.GET.get("id"))
         for i in request.FILES:
-            s3_client.upload_fileobj(request.FILES[i].file, Bucket="nadlans3", Key=f"properties/{i}")
+            image_file = request.FILES[i].file
+
+            image = Image.open(image_file)
+
+            compressed_image = compress_image(image)
+            s3_client.upload_fileobj(compressed_image, Bucket="nadlans3", Key=f"properties/{i}")
             p = Property.objects.filter(id=id)
             Photo.objects.create(image=f'{i}', property=p[0])
 
